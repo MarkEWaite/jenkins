@@ -237,7 +237,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jfree</groupId>
         <artifactId>jfreechart</artifactId>
-        <version>1.0.19</version>
+        <version>1.5.2</version>
       </dependency>
       <dependency>
         <groupId>commons-digester</groupId>
