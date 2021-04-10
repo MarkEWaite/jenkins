@@ -132,12 +132,6 @@ THE SOFTWARE.
       <artifactId>systemd-slave-installer</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.jenkins-ci.ui</groupId>
-      <artifactId>handlebars</artifactId>
-      <version>1.1.1</version>
-      <classifier>core-assets</classifier>
-    </dependency>
-    <dependency>
       <!--
         We bundle slf4j binding since we got some components (sshd for example)
         that uses slf4j.
@@ -439,7 +433,7 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-maven-plugin</artifactId>
-        <version>9.4.39.v20210325</version>
+        <version>11.0.2</version>
         <configuration>
           <!--
             Reload webapp when you hit ENTER. (See JETTY-282 for more)
