@@ -42,7 +42,7 @@ THE SOFTWARE.
     <asm.version>9.2</asm.version>
     <slf4jVersion>1.7.32</slf4jVersion>
     <stapler.version>1593.v0e838714faae</stapler.version>
-    <groovy.version>2.4.12</groovy.version>
+    <groovy.version>2.4.21</groovy.version>
   </properties>
 
   <dependencyManagement>
@@ -284,7 +284,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci</groupId>
         <artifactId>memory-monitor</artifactId>
-        <version>1.10</version>
+        <version>1.11</version>
       </dependency>
       <dependency>
         <groupId>net.java.dev.jna</groupId>
