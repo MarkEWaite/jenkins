@@ -47,7 +47,7 @@
     "stylelint-config-standard": "^20.0.0",
     "webpack": "^4.41.2",
     "webpack-cli": "^3.3.10",
-    "webpack-fix-style-only-entries": "^0.5.0"
+    "webpack-fix-style-only-entries": "^0.6.1"
   },
   "dependencies": {
     "@babel/preset-env": "^7.7.4",
