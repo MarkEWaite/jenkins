@@ -56,7 +56,7 @@
     "bootstrap": "3.3.5",
     "jenkins-js-modules": "^1.5.0",
     "jquery": "3.5.1",
-    "lodash": "^4.17.20",
+    "lodash": "^4.17.21",
     "postcss-less": "^6.0.0",
     "sortablejs": "^1.13.0",
     "window-handle": "^1.0.0"
