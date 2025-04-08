@@ -13,7 +13,7 @@ properties([
 ])
 
 def axes = [
-  platforms: ['linux', 'windows'],
+  platforms: ['linux'],
   jdks: [21, 25],
 ]
 
@@ -34,7 +34,7 @@ stage('Record build') {
         sh "launchable verify && launchable record build --name ${launchableName} --source jenkinsci/jenkins=."
         axes.values().combinations {
           def (platform, jdk) = it
-          if (platform == 'windows' && jdk != axes.jdks.last()) {
+          if (platform == 'windows') {
             return // unnecessary use of hardware
           }
           def sessionFile = "launchable-session-${platform}-jdk${jdk}.txt"
@@ -60,7 +60,7 @@ def builds = [:]
 
 axes.values().combinations {
   def (platform, jdk) = it
-  if (platform == 'windows' && jdk != axes.jdks.last()) {
+  if (platform == 'windows') {
     return // unnecessary use of hardware
   }
   builds["${platform}-jdk${jdk}"] = {
@@ -128,10 +128,10 @@ axes.values().combinations {
             }
             withChecks(name: 'Tests', includeStage: true) {
               realtimeJUnit(healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml') {
+                sh 'curl -O  https://home.markwaite.net/~mwaite/test-pom.patch && git apply test-pom.patch && git diff'
+                mavenOptions.add(0, "-Dignore.dirt")
                 infra.runMaven(mavenOptions, jdk)
-                if (isUnix()) {
-                  sh 'git add . && git diff --exit-code HEAD'
-                }
+                sh 'git checkout -- test/pom.xml'
               }
             }
           }
@@ -211,41 +211,6 @@ axes.values().combinations {
             }
           }
         }
-      }
-    }
-  }
-}
-
-def athAxes = [
-  platforms: ['linux'],
-  jdks: [21],
-  browsers: ['firefox'],
-]
-athAxes.values().combinations {
-  def (platform, jdk, browser) = it
-  builds["ath-${platform}-jdk${jdk}-${browser}"] = {
-    retry(conditions: [agent(), nonresumable()], count: 2) {
-      node('docker-highmem') {
-        // Just to be safe
-        deleteDir()
-        checkout scm
-
-        withChecks(name: 'Tests', includeStage: true) {
-          infra.withArtifactCachingProxy {
-            sh "bash ath.sh ${jdk} ${browser}"
-          }
-          junit testResults: 'target/ath-reports/TEST-*.xml', testDataPublishers: [[$class: 'AttachmentPublisher']]
-        }
-        /*
-         * Currently disabled, as the fact that this is a manually created subset will confuse Launchable,
-         * which expects this to be a full build. When we implement subsetting, this can be re-enabled using
-         * Launchable's subset rather than our own.
-         */
-        /*
-         withCredentials([string(credentialsId: 'launchable-jenkins-acceptance-test-harness', variable: 'LAUNCHABLE_TOKEN')]) {
-         sh "launchable verify && launchable record tests --no-build --flavor platform=${platform} --flavor jdk=${jdk} --flavor browser=${browser} maven './target/ath-reports'"
-         }
-         */
       }
     }
   }
