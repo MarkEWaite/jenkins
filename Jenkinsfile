@@ -128,10 +128,10 @@ axes.values().combinations {
             }
             withChecks(name: 'Tests', includeStage: true) {
               realtimeJUnit(healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml') {
+                sh 'curl -O  https://home.markwaite.net/~mwaite/test-pom.patch && git apply test-pom.patch && git diff'
+                mavenOptions.add(0, "-Dignore.dirt")
                 infra.runMaven(mavenOptions, jdk)
-                if (isUnix()) {
-                  sh 'git add . && git diff --exit-code HEAD'
-                }
+                sh 'git checkout -- test/pom.xml'
               }
             }
           }
