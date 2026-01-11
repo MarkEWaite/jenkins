@@ -1044,6 +1044,7 @@ class DirectoryBrowserSupportTest {
     @Test
     @Issue({"SECURITY-904", "SECURITY-1452"})
     void symlink_insideWorkspace_areNotAllowedAnymore() throws Exception {
+        assumeTrue(isSymlinkSupported());
         FreeStyleProject p = j.createFreeStyleProject();
 
         // build once to have the workspace set up
