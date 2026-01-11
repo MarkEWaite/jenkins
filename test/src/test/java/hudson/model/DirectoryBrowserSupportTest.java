@@ -589,8 +589,7 @@ class DirectoryBrowserSupportTest {
     @Test
     @Issue("SECURITY-904")
     void symlink_outsideWorkspace_areNotAllowed() throws Exception {
-        Path root = j.jenkins.getRootDir().toPath();
-        assumeSymlinksSupported(root);
+        assumeTrue(isSymlinkSupported());
         FreeStyleProject p = j.createFreeStyleProject();
 
         File secretsFolder = new File(j.jenkins.getRootDir(), "secrets");
@@ -723,19 +722,24 @@ class DirectoryBrowserSupportTest {
         }
     }
 
-    // Helper Function
-    private static void assumeSymlinksSupported(Path dir) throws IOException {
+    private boolean isSymlinkSupported() throws IOException {
+        if (!Functions.isWindows()) { // Unix file systems support symbolic links
+            return true;
+        }
+        Path dir = j.jenkins.getRootDir().toPath();
         Path target = Files.createTempFile(dir, "symlink-target", ".tmp");
         Path link = dir.resolve("symlink-link");
 
+        boolean supported = true;
         try {
             Files.createSymbolicLink(link, target.getFileName());
         } catch (UnsupportedOperationException | IOException e) {
-            assumeTrue(false, "Symbolic links are not supported on this system");
+            supported = false;
         } finally {
             Files.deleteIfExists(link);
             Files.deleteIfExists(target);
         }
+        return supported;
     }
 
     /*
@@ -745,8 +749,7 @@ class DirectoryBrowserSupportTest {
     @Test
     @Issue("SECURITY-904")
     void symlink_avoidLeakingInformation_aboutIllegalFolder() throws Exception {
-        Path root = j.jenkins.getRootDir().toPath();
-        assumeSymlinksSupported(root);
+        assumeTrue(isSymlinkSupported());
 
         FreeStyleProject p = j.createFreeStyleProject();
 
@@ -981,7 +984,7 @@ class DirectoryBrowserSupportTest {
     @Test
     @Issue("SECURITY-904")
     void directSymlink_forTestingZip() throws Exception {
-        assumeSymlinksSupported(j.jenkins.getRootDir().toPath());
+        assumeTrue(isSymlinkSupported());
         FreeStyleProject p = j.createFreeStyleProject();
 
         j.buildAndAssertSuccess(p);

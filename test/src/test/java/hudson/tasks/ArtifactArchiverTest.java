@@ -48,7 +48,6 @@ import hudson.model.Label;
 import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.Slave;
-import hudson.model.TaskListener;
 import hudson.remoting.VirtualChannel;
 import hudson.slaves.DumbSlave;
 import java.io.File;
@@ -56,6 +55,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -103,7 +104,7 @@ class ArtifactArchiverTest {
     @Issue("JENKINS-3227")
     void testEmptyDirectories() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
-        ArtifactArchiver artifactArchiver = new ArtifactArchiver("dir/");
+        Publisher artifactArchiver = new ArtifactArchiver("dir/");
         project.getPublishersList().replaceBy(Collections.singleton(artifactArchiver));
         project.getBuildersList().replaceBy(Collections.singleton(new TestBuilder() {
             @Override
@@ -279,28 +280,32 @@ class ArtifactArchiverTest {
         assertEquals("fizz", linkkids[0].getName());
     }
 
-    private static void assumeSymlinksSupported(FilePath ws) throws Exception {
-        FilePath target = ws.child("symlink-target.tmp");
-        FilePath link = ws.child("symlink-link.tmp");
-
-        try {
-            target.write("test", "UTF-8");
-            link.symlinkTo(target.getName(), TaskListener.NULL);
-        } catch (UnsupportedOperationException | IOException e) {
-            assumeTrue(false, "Symbolic links are not supported on this system");
-        } finally {
-            link.delete();
-            target.delete();
+    private boolean isSymlinkSupported() throws Exception {
+        if (!Functions.isWindows()) { // Unix file systems support symbolic links
+            return true;
         }
+        Path dir = j.jenkins.getRootDir().toPath();
+        Path target = Files.createTempFile(dir, "symlink-target", ".tmp");
+        Path link = dir.resolve("symlink-link");
+
+        boolean supported = true;
+        try {
+            Files.createSymbolicLink(link, target.getFileName());
+        } catch (UnsupportedOperationException | IOException e) {
+            supported = false;
+        } finally {
+            Files.deleteIfExists(link);
+            Files.deleteIfExists(target);
+        }
+        return supported;
     }
 
 
     @Issue("SECURITY-162")
     @Test
     void outsideSymlinks() throws Exception {
+        assumeTrue(isSymlinkSupported());
         final FreeStyleProject p = j.createFreeStyleProject();
-        j.buildAndAssertSuccess(p);
-        assumeSymlinksSupported(p.getSomeWorkspace());
         p.getBuildersList().add(new TestBuilder() {
             @Override public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
                 FilePath ws = build.getWorkspace();
@@ -538,9 +543,8 @@ class ArtifactArchiverTest {
     @Test
     @Issue("JENKINS-55049")
     void lengthOfArtifactIsCorrect_eventForInvalidSymlink() throws Exception {
+        assumeTrue(isSymlinkSupported());
         FreeStyleProject p = j.createFreeStyleProject();
-        j.buildAndAssertSuccess(p);
-        assumeSymlinksSupported(p.getSomeWorkspace());
         p.getBuildersList().add(new TestBuilder() {
             @Override public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
                 FilePath ws = build.getWorkspace();
