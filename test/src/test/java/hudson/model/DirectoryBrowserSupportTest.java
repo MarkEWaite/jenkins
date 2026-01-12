@@ -53,6 +53,7 @@ import hudson.tasks.ArtifactArchiver;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Shell;
 import hudson.util.StreamTaskListener;
+import hudson.util.SymlinkTestUtil;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -589,7 +590,7 @@ class DirectoryBrowserSupportTest {
     @Test
     @Issue("SECURITY-904")
     void symlink_outsideWorkspace_areNotAllowed() throws Exception {
-        assumeTrue(isSymlinkSupported());
+        SymlinkTestUtil.assumeSymlinksSupported();
         FreeStyleProject p = j.createFreeStyleProject();
 
         File secretsFolder = new File(j.jenkins.getRootDir(), "secrets");
@@ -722,26 +723,6 @@ class DirectoryBrowserSupportTest {
         }
     }
 
-    private boolean isSymlinkSupported() throws IOException {
-        if (!Functions.isWindows()) { // Unix file systems support symbolic links
-            return true;
-        }
-        Path dir = j.jenkins.getRootDir().toPath();
-        Path target = Files.createTempFile(dir, "symlink-target", ".tmp");
-        Path link = dir.resolve("symlink-link");
-
-        boolean supported = true;
-        try {
-            Files.createSymbolicLink(link, target.getFileName());
-        } catch (UnsupportedOperationException | IOException e) {
-            supported = false;
-        } finally {
-            Files.deleteIfExists(link);
-            Files.deleteIfExists(target);
-        }
-        return supported;
-    }
-
     /*
      * If the glob filter is used, we do not want that it leaks some information.
      * Presence of a folder means that the folder contains one or multiple results, so we need to hide it completely
@@ -749,7 +730,7 @@ class DirectoryBrowserSupportTest {
     @Test
     @Issue("SECURITY-904")
     void symlink_avoidLeakingInformation_aboutIllegalFolder() throws Exception {
-        assumeTrue(isSymlinkSupported());
+        SymlinkTestUtil.assumeSymlinksSupported();
 
         FreeStyleProject p = j.createFreeStyleProject();
 
@@ -984,7 +965,7 @@ class DirectoryBrowserSupportTest {
     @Test
     @Issue("SECURITY-904")
     void directSymlink_forTestingZip() throws Exception {
-        assumeTrue(isSymlinkSupported());
+        SymlinkTestUtil.assumeSymlinksSupported();
         FreeStyleProject p = j.createFreeStyleProject();
 
         j.buildAndAssertSuccess(p);
@@ -1044,7 +1025,7 @@ class DirectoryBrowserSupportTest {
     @Test
     @Issue({"SECURITY-904", "SECURITY-1452"})
     void symlink_insideWorkspace_areNotAllowedAnymore() throws Exception {
-        assumeTrue(isSymlinkSupported());
+        SymlinkTestUtil.assumeSymlinksSupported();
         FreeStyleProject p = j.createFreeStyleProject();
 
         // build once to have the workspace set up
