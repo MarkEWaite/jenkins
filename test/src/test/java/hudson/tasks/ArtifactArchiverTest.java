@@ -379,7 +379,7 @@ class ArtifactArchiverTest {
     void testDefaultExcludesOn() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
 
-        ArtifactArchiver artifactArchiver = new ArtifactArchiver("**", "", false, false, true, true);
+        Publisher artifactArchiver = new ArtifactArchiver("**", "", false, false, true, true);
         project.getPublishersList().replaceBy(Collections.singleton(artifactArchiver));
         project.getBuildersList().replaceBy(Collections.singleton(new CreateDefaultExcludesArtifact()));
 
