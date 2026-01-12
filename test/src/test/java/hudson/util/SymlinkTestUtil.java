@@ -3,7 +3,6 @@ package hudson.util;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.model.TaskListener;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.jupiter.api.Assumptions;
@@ -34,7 +33,7 @@ public final class SymlinkTestUtil {
             target.write("test", "UTF-8");
             link.symlinkTo(target.getName(), TaskListener.NULL);
             supported = link.exists(); // symlinkTo can fail to create and return silently
-        } catch (InterruptedException | IOException e) {
+        } catch (Exception e) {
             supported = false;
         } finally {
             try {
@@ -44,7 +43,6 @@ public final class SymlinkTestUtil {
                 Files.deleteIfExists(tempDir);
             }
         }
-        System.out.println("**** Symlinks supported: " + supported);
         Assumptions.assumeTrue(supported, "Symbolic links are not supported on this system");
     }
 }
