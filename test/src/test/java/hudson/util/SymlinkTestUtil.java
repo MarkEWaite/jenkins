@@ -13,9 +13,8 @@ public final class SymlinkTestUtil {
         // utility class
     }
 
-     // Checks whether symbolic links are supported on this system.
-     // Uses a regular temporary directory to avoid JenkinsRule dependency.
-
+    // Checks whether symbolic links are supported on this system.
+    // Uses a regular temporary directory to avoid JenkinsRule dependency.
     public static void assumeSymlinksSupported() throws Exception {
         if (!Functions.isWindows()) {
             /* Unix file systems support symbolic links */
