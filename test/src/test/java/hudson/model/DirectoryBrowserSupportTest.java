@@ -731,7 +731,6 @@ class DirectoryBrowserSupportTest {
     @Issue("SECURITY-904")
     void symlink_avoidLeakingInformation_aboutIllegalFolder() throws Exception {
         SymlinkTestUtil.assumeSymlinksSupported();
-
         FreeStyleProject p = j.createFreeStyleProject();
 
         File secretsFolder = new File(j.jenkins.getRootDir(), "secrets");
