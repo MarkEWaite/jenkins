@@ -29,12 +29,12 @@ public final class SymlinkTestUtil {
         FilePath target = ws.child("symlink-target.tmp");
         FilePath link = ws.child("symlink-link.tmp");
 
-        boolean supported = true;
+        boolean supported;
         try {
             target.write("test", "UTF-8");
             link.symlinkTo(target.getName(), TaskListener.NULL);
+            supported = link.exists(); // symlinkTo can fail to create and return silently
         } catch (InterruptedException | IOException e) {
-            System.out.println("**** Symlinks not supported");
             supported = false;
         } finally {
             try {
@@ -44,6 +44,7 @@ public final class SymlinkTestUtil {
                 Files.deleteIfExists(tempDir);
             }
         }
+        System.out.println("**** Symlinks supported: " + supported);
         Assumptions.assumeTrue(supported, "Symbolic links are not supported on this system");
     }
 }
