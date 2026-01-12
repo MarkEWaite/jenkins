@@ -1,6 +1,7 @@
 package hudson.util;
 
 import hudson.FilePath;
+import hudson.Functions;
 import hudson.model.TaskListener;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -13,22 +14,28 @@ public final class SymlinkTestUtil {
         // utility class
     }
 
-
      // Checks whether symbolic links are supported on this system.
      // Uses a regular temporary directory to avoid JenkinsRule dependency.
 
     public static void assumeSymlinksSupported() throws Exception {
+        if (!Functions.isWindows()) {
+            /* Unix file systems support symbolic links */
+            return;
+        }
+
         Path tempDir = Files.createTempDirectory("jenkins-symlink-test");
 
         FilePath ws = new FilePath(tempDir.toFile());
         FilePath target = ws.child("symlink-target.tmp");
         FilePath link = ws.child("symlink-link.tmp");
 
+        boolean supported = true;
         try {
             target.write("test", "UTF-8");
             link.symlinkTo(target.getName(), TaskListener.NULL);
-        } catch (UnsupportedOperationException | IOException e) {
-            Assumptions.assumeTrue(false, "Symbolic links are not supported on this system");
+        } catch (InterruptedException | IOException e) {
+            System.out.println("**** Symlinks not supported");
+            supported = false;
         } finally {
             try {
                 link.delete();
@@ -37,5 +44,6 @@ public final class SymlinkTestUtil {
                 Files.deleteIfExists(tempDir);
             }
         }
+        Assumptions.assumeTrue(supported, "Symbolic links are not supported on this system");
     }
 }
